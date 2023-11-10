@@ -1,26 +1,36 @@
 def main():
-    
+    print("This script implements Breadth-First and Depth-First Search algorithms\n")
+    algorithm = input("Please input bfs or dfs to select which implementation to run: ")
     grid = readGrid("path.txt")
-    startLocation = [1,1]
-    goalLocation = [4,4]
-    
-    goalNode = uninformedSearch(grid, startLocation, goalLocation)
+    startLocation = []
+    goalLocation = []
+    startLocation.append(int(input("Enter row number of start location (first row = row 0): ")))
+    startLocation.append(int(input("Enter column number of start location (first column = column 0): ")))
+    goalLocation.append(int(input("Enter row number of goal location (first row = row 0): ")))
+    goalLocation.append(int(input("Enter column number of goal location (first column = column 0): ")))
+    goalNode = uninformedSearch(grid, startLocation, goalLocation, algorithm)
     if(goalNode == None):
         print("No path found between {} and {}".format(startLocation, goalLocation))
     else:
-        outputGrid(grid, startLocation, goalLocation, setPath(goalNode, []))
+        path = setPath(goalNode, [])
+        outputGrid(grid, startLocation, goalLocation, path)
+        print("Path between {} and {} is: {}".format(startLocation, goalLocation, path))
+        print("Path cost is: {}".format(len(path) - 1))
     
 class Node:
     def __init__(self, value, parent):
         self.value = value
         self.parent = parent
 
-def uninformedSearch(grid, start, goal):
+def uninformedSearch(grid, start, goal, algorithm):
     current = Node(start, None)
     openList = [current]
     closedList = []
     while(len(openList) > 0):
-        current = openList.pop(0)
+        if(algorithm == "bfs"):
+            current = openList.pop(0)
+        elif(algorithm == "dfs"):
+            current = openList.pop()
         if(current.value == goal):
             return current
         closedList.append(current)
@@ -28,21 +38,20 @@ def uninformedSearch(grid, start, goal):
     return None
 
 def setPath(current, path):
-    while(current.parent != None):
+    while(current != None):
         path.insert(0, current.value)
         current = current.parent
-    path.insert(0, current.value)
     return path
     
 def getNeighbors(location, grid):
     neighbors = []
-    if(location[0] - 1 >= 0 && grid[location[0] - 1][location[1]] == 0):
+    if(location[0] - 1 >= 0 and grid[location[0] - 1][location[1]] == 0):
         neighbors.append([location[0] - 1, location[1]])
-    if(location[1] + 1 < len(grid[0]) && grid[location[0]][location[1] + 1] == 0):
+    if(location[1] + 1 < len(grid[0]) and grid[location[0]][location[1] + 1] == 0):
         neighbors.append([location[0], location[1] + 1])
-    if(location[0] + 1 < len(grid) && grid[location[0] + 1][location[1]] == 0):
+    if(location[0] + 1 < len(grid) and grid[location[0] + 1][location[1]] == 0):
         neighbors.append([location[0] + 1, location[1]])
-    if(location[1] - 1 >= 0 && grid[location[0]][location[1] - 1] == 0):
+    if(location[1] - 1 >= 0 and grid[location[0]][location[1] - 1] == 0):
         neighbors.append([location[0], location[1] - 1])
     return neighbors
 
@@ -50,7 +59,7 @@ def expandNode(node, grid, openList, closedList):
     neighbors = getNeighbors(node.value, grid)
     for n in neighbors:
         child = Node(n, node)
-        if(not inList(child, openList) && not inList(child, closedList)):
+        if(not inList(child, openList) and not inList(child, closedList)):
             openList.append(child)
 
 def inList(node, l):
@@ -94,7 +103,7 @@ def outputGrid(grid, start, goal, path):
         goal (list): goal position (row, column)
     """
     #print('In outputGrid')
-    filenameStr = 'path.txt'
+    filenameStr = 'pathOutput.txt'
  
     # Open filename
     f = open(filenameStr, 'w')
