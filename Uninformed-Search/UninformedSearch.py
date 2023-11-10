@@ -4,18 +4,20 @@ def main():
     grid = readGrid("path.txt")
     startLocation = []
     goalLocation = []
-    startLocation.append(int(input("Enter row number of start location (first row = row 0): ")))
-    startLocation.append(int(input("Enter column number of start location (first column = column 0): ")))
-    goalLocation.append(int(input("Enter row number of goal location (first row = row 0): ")))
-    goalLocation.append(int(input("Enter column number of goal location (first column = column 0): ")))
-    goalNode = uninformedSearch(grid, startLocation, goalLocation, algorithm)
+    startLocation.append(int(input("Enter row number of start location (between 0-6): ")))
+    startLocation.append(int(input("Enter column number of start location (between 0-7): ")))
+    goalLocation.append(int(input("Enter row number of goal location (between 0-6): ")))
+    goalLocation.append(int(input("Enter column number of goal location (between 0-7): ")))
+    expandedNodes, goalNode = uninformedSearch(grid, startLocation, goalLocation, algorithm)
     if(goalNode == None):
         print("No path found between {} and {}".format(startLocation, goalLocation))
     else:
         path = setPath(goalNode, [])
         outputGrid(grid, startLocation, goalLocation, path)
-        print("Path between {} and {} is: {}".format(startLocation, goalLocation, path))
+        print("\nPath between {} and {} is: {}".format(startLocation, goalLocation, path))
         print("Path cost is: {}".format(len(path) - 1))
+        print("Number of expanded nodes: {}".format(expandedNodes))
+        print("Final path written to file pathOutput.txt")
     
 class Node:
     def __init__(self, value, parent):
@@ -32,10 +34,10 @@ def uninformedSearch(grid, start, goal, algorithm):
         elif(algorithm == "dfs"):
             current = openList.pop()
         if(current.value == goal):
-            return current
+            return len(closedList), current
         closedList.append(current)
         expandNode(current, grid, openList, closedList)
-    return None
+    return len(closedList), None
 
 def setPath(current, path):
     while(current != None):
