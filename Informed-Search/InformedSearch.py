@@ -24,18 +24,21 @@ def main():
         print("Final path written to file pathOutput.txt")
     
 class Node:
-    def __init__(self, value, parent, pathCost, heuristicCost):
+    def __init__(self, value, parent, pathCost, heuristicCost, algorithm):
         self.value = value
         self.parent = parent
         self.g = pathCost
         self.h = heuristicCost
-        self.f = self.g + self.h
+        if(algorithm == 'greedy'):
+            self.f = self.h
+        elif(algorithm == 'astar'):
+            self.f = self.g + self.h
     
     def __lt__(self, other):
-        return self.h < other.h
+        return self.f < other.f
 
 def informedSearch(grid, start, goal, algorithm):
-    current = Node(start, None, 0, math.dist(start, goal))
+    current = Node(start, None, 0, math.dist(start, goal), algorithm)
     openList = []
     heapq.heappush(openList, current)
     closedList = []
@@ -44,7 +47,7 @@ def informedSearch(grid, start, goal, algorithm):
         if(current.value == goal):
             return len(closedList), current
         closedList.append(current)
-        expandNode(current, grid, openList, closedList, goal)
+        expandNode(current, grid, openList, closedList, goal, algorithm)
     return len(closedList), None
 
 def setPath(current, path):
@@ -65,14 +68,33 @@ def getNeighbors(location, grid):
         neighbors.append([location[0], location[1] - 1])
     return neighbors
 
-def expandNode(node, grid, openList, closedList, goalLocation):
+def expandNode(node, grid, openList, closedList, goalLocation, algorithm):
     neighbors = getNeighbors(node.value, grid)
     for n in neighbors:
-        child = Node(n, node, grid[n[0]][n[1]] + node.g, math.dist(n, goalLocation))
-        if(not inList(child, openList) and not inList(child, closedList)):
+        child = Node(n, node, grid[n[0]][n[1]] + node.g, math.dist(n, goalLocation), algorithm)
+        isInOpenList, existingNode = inOpenList(child, openList)
+        if isInOpenList and child.g < existingNode.g:
+            openList.remove(existingNode)
             heapq.heappush(openList, child)
+            if inClosedList(existingNode, closedList):
+                closedList.remove(existingNode)
+        elif not inClosedList(child, closedList):
+            heapq.heappush(openList, child)
+        '''
+        isInOpenList, temp = inList(child, openList)
+        isInClosedList, temp = inList(child, closedList)
+        if not isInOpenList and not isInClosedList:
+            heapq.heappush(openList, child)
+        if(not inList(child, openList) and not inClosedList(child, closedList)):
+            heapq.heappush(openList, child)'''
 
-def inList(node, l):
+def inOpenList(node, l):
+    for e in l:
+        if node.value == e.value:
+            return True, e
+    return False, None
+
+def inClosedList(node, l):
     for e in l:
         if node.value == e.value:
             return True
