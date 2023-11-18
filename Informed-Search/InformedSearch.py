@@ -17,11 +17,11 @@ def main():
     else:
         path = setPath(goalNode, [])
         outputGrid(grid, startLocation, goalLocation, path)
-        print("\nPath between {} and {} is: {}".format(startLocation, goalLocation, path))
+        print("\nPath between {} and {} is:\n{}".format(startLocation, goalLocation, path))
         print("Path cost is: {}".format(goalNode.g))
         print("Number of expanded nodes: {}".format(expandedNodes))
-        print("Heuristic function used: Straight-line distance")
-        print("Final path written to file pathOutput.txt")
+        print("Heuristic function used: Euclidean distance")
+        print("\nFinal path written to file pathOutput.txt")
     
 class Node:
     def __init__(self, value, parent, pathCost, heuristicCost, algorithm):
@@ -72,33 +72,26 @@ def expandNode(node, grid, openList, closedList, goalLocation, algorithm):
     neighbors = getNeighbors(node.value, grid)
     for n in neighbors:
         child = Node(n, node, grid[n[0]][n[1]] + node.g, math.dist(n, goalLocation), algorithm)
-        isInOpenList, existingNode = inOpenList(child, openList)
-        if isInOpenList and child.g < existingNode.g:
-            openList.remove(existingNode)
-            heapq.heappush(openList, child)
-            if inClosedList(existingNode, closedList):
-                closedList.remove(existingNode)
-        elif not inClosedList(child, closedList):
-            heapq.heappush(openList, child)
-        '''
-        isInOpenList, temp = inList(child, openList)
-        isInClosedList, temp = inList(child, closedList)
-        if not isInOpenList and not isInClosedList:
-            heapq.heappush(openList, child)
-        if(not inList(child, openList) and not inClosedList(child, closedList)):
-            heapq.heappush(openList, child)'''
+        inOpenList, existingNode = inList(child, openList)
+        inClosedList, temp = inList(child, closedList)
+        if algorithm == "greedy":
+            if not inOpenList and not inClosedList:
+                heapq.heappush(openList, child)
+        elif algorithm == "astar":
+            if inOpenList:
+                if child.g < existingNode.g:
+                    openList.remove(existingNode)
+                    heapq.heappush(openList, child)
+                    if inClosedList:
+                        closedList.remove(existingNode)
+            elif not inClosedList:
+                heapq.heappush(openList, child)
 
-def inOpenList(node, l):
+def inList(node, l):
     for e in l:
         if node.value == e.value:
             return True, e
     return False, None
-
-def inClosedList(node, l):
-    for e in l:
-        if node.value == e.value:
-            return True
-    return False
 
 def readGrid(filename):
     """ Reads a grid from a file and returns it as a 2D list. The grid values must be separated by spaces, e.g.,
