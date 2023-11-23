@@ -1,5 +1,46 @@
-
 import random
+import math
+
+def main():
+    boardSize = [4, 8, 16]
+    decayRate = [0.9, 0.75, 0.5]
+    threshold = [0.000001, 0.0000001, 0.00000001]
+    for size in boardSize:
+        print("\n###############\nBoard Size: {}\n###############".format(size))
+        for i in range(0, 3):
+            print("\n***********************************\n" +
+            "Decay Rate: {}  T Threshold: {}".format(decayRate[i], threshold[i]) +
+            "\n***********************************")
+            simulatedAnnealing(decayRate[i], threshold[i], size)
+
+def simulatedAnnealing(decayRate, threshold, boardSize):
+    finalhValue = 0
+    for i in range(0, 10):
+        T = 100
+        board = Board(boardSize)
+        board.rand()
+        print("\nRUN {}\n\nInitial Board:".format(i + 1))
+        board.printBoard()
+        hValue = numAttackingQueens(board)
+        print("h-value: {}".format(hValue))
+        while T > threshold:
+            if hValue == 0:
+                break
+            neighborStates = getSuccessorStates(board)
+            nextState = neighborStates[random.randrange(len(neighborStates))]
+            deltaE = hValue - numAttackingQueens(nextState)
+            if deltaE > 0:
+                board = nextState
+                hValue = numAttackingQueens(board)
+            elif random.random() < pow(math.e, deltaE/T):
+                board = nextState
+                hValue = numAttackingQueens(board)
+            T = T * decayRate
+        print("\nFinal Board:")
+        board.printBoard()
+        finalhValue += hValue
+        print("h-value: {}".format(hValue))
+    print("\nAverage h-cost of final solutions: {}\n".format(finalhValue/10))
 
 class Board():
 
@@ -28,10 +69,6 @@ class Board():
         temp = self.cells[a[0]][a[1]]
         self.cells[a[0]][a[1]] = self.cells[b[0]][b[1]]
         self.cells[b[0]][b[1]] = temp
-
-
-
-
 
 # Cost function for a board
 def numAttackingQueens(board):
@@ -68,9 +105,6 @@ def numAttackingQueens(board):
 
     return result
 
-
-
-
 # Move any queen to another square in the same column
 # successors all the same                                                                                    
 def getSuccessorStates(board):
@@ -97,3 +131,6 @@ def getSuccessorStates(board):
                 result.append(bTemp)
 
     return result
+
+if __name__ == '__main__':
+    main()
